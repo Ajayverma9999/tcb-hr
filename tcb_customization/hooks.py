@@ -5,6 +5,91 @@ app_description = "tcb"
 app_email = "tcb@gmail.com"
 app_license = "mit"
 
+
+# scheduler_events = {
+#     "cron": {
+#         "0 22 * * *": [
+#             "tcb_customization.api.timesheet_reminder.first_reminder"
+#         ],
+#         "30 23 * * *": [
+#             "tcb_customization.api.timesheet_reminder.final_reminder"
+#         ],
+#         "55 23 * * *": [
+#             "tcb_customization.api.timesheet_reminder.mark_lwp"
+#         ]
+#     }
+# }
+
+
+
+scheduler_events = {
+    "cron": {
+        "30 0 * * *": [
+            "tcb_customization.api.attendance_job.process_previous_day"
+        ],
+        "0 22 * * *": [
+            "tcb_customization.api.timesheet_reminder.first_reminder"
+        ],
+        "30 23 * * *": [
+            "tcb_customization.api.timesheet_reminder.final_reminder"
+        ],
+        "55 23 * * *": [
+            "tcb_customization.api.timesheet_reminder.mark_lwp"
+        ]
+    }
+}
+
+# Monthly payroll draft on 1st at 02:00
+scheduler_events["cron"]["0 2 1 * *"] = [
+    "tcb_customization.api.payroll_job.create_monthly_payroll_draft"
+]
+
+# Saturday policy sync: runs on the 25th of each month at 01:00, applying
+# the configured Saturday policy to the FOLLOWING month's calendar so the
+# Holiday List is ready before that month's payroll/attendance processing.
+scheduler_events["cron"]["0 1 25 * *"] = [
+    "tcb_customization.api.hr_settings.apply_saturday_policy"
+]
+doc_events = {
+    "Leave Application": {
+        "validate": "tcb_customization.api.leave_validation.validate_leave_notice"
+    }
+}
+
+# Add Attendance validation hook to prevent edits in locked payroll periods
+doc_events.update({
+    "Attendance": {
+        "validate": "tcb_customization.api.payroll_job.prevent_edit_if_locked"
+    },
+    "Leave Application": {
+        "validate": [
+            "tcb_customization.api.leave_validation.validate_leave_notice",
+            "tcb_customization.api.payroll_job.prevent_edit_if_locked"
+        ]
+    },
+    "Payroll Entry": {
+        "on_submit": "tcb_customization.api.payroll_job.on_payroll_submit"
+    }
+})
+
+# Timesheet validation: auto-fill employee and require descriptions on time logs
+doc_events.update({
+    "Timesheet": {
+        "validate": "tcb_customization.api.timesheet_hooks.validate_timesheet"
+    }
+})
+
+# Hook Expense Claim submissions to create Additional Salary for reimbursements
+doc_events.update({
+    "Expense Claim": {
+        "on_submit": "tcb_customization.api.expense_to_payroll.create_additional_salary_for_expense"
+    }
+})
+
+# Client-side Timesheet customisations
+doctype_js = {"Timesheet": "public/js/timesheet.js"}
+# Simple HR Console page JS (loads when a Page named "hr-console" is created in Desk)
+page_js = {"hr-console": "public/js/hr_console.js"}
 # Apps
 # ------------------
 
@@ -179,6 +264,10 @@ app_license = "mit"
 # extend_doctype_class = {
 # 	"Task": "tcb_customization.custom.task.CustomTaskMixin"
 # }
+extend_doctype_class = {
+    "Attendance Request": "tcb_customization.overrides.attendance_request.CustomAttendanceRequest",
+    "Leave Application": "tcb_customization.overrides.leave_application.CustomLeaveApplication",
+}
 
 # Overriding Methods
 # ------------------------------
@@ -256,3 +345,18 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+
+# Notify reporting manager on submission of WFH / Leave requests
+doc_events.update({
+    "Attendance Request": {
+        "on_submit": "tcb_customization.api.wfh_workflow.notify_manager_attendance_request"
+    },
+    "Leave Application": {
+        "validate": [
+            "tcb_customization.api.leave_validation.validate_leave_notice",
+            "tcb_customization.api.payroll_job.prevent_edit_if_locked",
+            "tcb_customization.api.leave_validation.validate_manager_verification"
+        ],
+        "on_submit": "tcb_customization.api.wfh_workflow.notify_manager_leave_application"
+    }
+})
