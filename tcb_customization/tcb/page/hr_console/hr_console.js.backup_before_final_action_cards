@@ -293,9 +293,10 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 						<div
 							style="
-								font-size:22px;
+								font-size:18px;
 								font-weight:700;
 								margin-top:8px;
+								color:#444;
 							" id="hr-wfh-count"
 						>
 							
@@ -317,9 +318,10 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 						<div
 							style="
-								font-size:22px;
+								font-size:18px;
 								font-weight:700;
 								margin-top:8px;
+								color:#444;
 							" id="hr-leave-application-count"
 						>
 							
@@ -341,10 +343,44 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 						<div
 							style="
-								font-size:22px;
+								font-size:18px;
 								font-weight:700;
 								margin-top:8px;
+								color:#444;
 							" id="hr-expense-claim-count"
+						>
+							
+						</div>
+					</div>
+<div
+							style="
+								font-size:18px;
+								font-weight:700;
+								margin-top:8px;
+								color:#2563eb;
+							"
+						>
+							
+						</div>
+					</div>
+<div
+							style="
+								font-size:18px;
+								font-weight:700;
+								margin-top:8px;
+								color:#2563eb;
+							"
+						>
+							
+						</div>
+					</div>
+<div
+							style="
+								font-size:18px;
+								font-weight:700;
+								margin-top:8px;
+								color:#2563eb;
+							"
 						>
 							
 						</div>
@@ -552,8 +588,7 @@ Object.assign(frappe.pages["hr-console"], {
 				filters: [
 					["Attendance Request", "reason", "=", "Work From Home"],
 					["Attendance Request", "from_date", "<=", to_date],
-					["Attendance Request", "to_date", ">=", from_date],
-					["Attendance Request", "docstatus", "=", 1]
+					["Attendance Request", "to_date", ">=", from_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-wfh-count").text(count || 0);
@@ -562,8 +597,7 @@ Object.assign(frappe.pages["hr-console"], {
 			frappe.db.count("Leave Application", {
 				filters: [
 					["Leave Application", "from_date", "<=", to_date],
-					["Leave Application", "to_date", ">=", from_date],
-					["Leave Application", "docstatus", "=", 1]
+					["Leave Application", "to_date", ">=", from_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-leave-application-count").text(count || 0);
@@ -572,8 +606,7 @@ Object.assign(frappe.pages["hr-console"], {
 			frappe.db.count("Expense Claim", {
 				filters: [
 					["Expense Claim", "posting_date", ">=", from_date],
-					["Expense Claim", "posting_date", "<=", to_date],
-					["Expense Claim", "docstatus", "=", 1]
+					["Expense Claim", "posting_date", "<=", to_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-expense-claim-count").text(count || 0);
@@ -2117,36 +2150,6 @@ Object.assign(frappe.pages["hr-console"], {
 				loadEmployees(0);
 			}
 		);
-
-		// ==================================================
-		// REFRESH
-		// ==================================================
-
-		$main
-			.find("#hr-refresh")
-			.on(
-				"click",
-				function () {
-
-					fromDate =
-						$fromDate.val() ||
-						frappe.datetime.get_today();
-
-					toDate =
-						$toDate.val() ||
-						frappe.datetime.get_today();
-
-					selectedDate = fromDate;
-
-					currentPage = 0;
-					selectedEmployee = null;
-
-					loadOverview();
-					loadActionCardCounts();
-					loadDepartments();
-					loadEmployees(0);
-				}
-			);
 
 		// ==================================================
 		// INITIAL LOAD

@@ -552,8 +552,7 @@ Object.assign(frappe.pages["hr-console"], {
 				filters: [
 					["Attendance Request", "reason", "=", "Work From Home"],
 					["Attendance Request", "from_date", "<=", to_date],
-					["Attendance Request", "to_date", ">=", from_date],
-					["Attendance Request", "docstatus", "=", 1]
+					["Attendance Request", "to_date", ">=", from_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-wfh-count").text(count || 0);
@@ -562,8 +561,7 @@ Object.assign(frappe.pages["hr-console"], {
 			frappe.db.count("Leave Application", {
 				filters: [
 					["Leave Application", "from_date", "<=", to_date],
-					["Leave Application", "to_date", ">=", from_date],
-					["Leave Application", "docstatus", "=", 1]
+					["Leave Application", "to_date", ">=", from_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-leave-application-count").text(count || 0);
@@ -572,8 +570,7 @@ Object.assign(frappe.pages["hr-console"], {
 			frappe.db.count("Expense Claim", {
 				filters: [
 					["Expense Claim", "posting_date", ">=", from_date],
-					["Expense Claim", "posting_date", "<=", to_date],
-					["Expense Claim", "docstatus", "=", 1]
+					["Expense Claim", "posting_date", "<=", to_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-expense-claim-count").text(count || 0);

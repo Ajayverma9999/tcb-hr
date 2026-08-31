@@ -293,10 +293,11 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 						<div
 							style="
-								font-size:22px;
+								font-size:18px;
 								font-weight:700;
 								margin-top:8px;
-							" id="hr-wfh-count"
+								color:#2563eb;
+							"
 						>
 							
 						</div>
@@ -317,10 +318,11 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 						<div
 							style="
-								font-size:22px;
+								font-size:18px;
 								font-weight:700;
 								margin-top:8px;
-							" id="hr-leave-application-count"
+								color:#2563eb;
+							"
 						>
 							
 						</div>
@@ -341,10 +343,44 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 						<div
 							style="
-								font-size:22px;
+								font-size:18px;
 								font-weight:700;
 								margin-top:8px;
-							" id="hr-expense-claim-count"
+								color:#2563eb;
+							"
+						>
+							
+						</div>
+					</div>
+<div
+							style="
+								font-size:18px;
+								font-weight:700;
+								margin-top:8px;
+								color:#2563eb;
+							"
+						>
+							
+						</div>
+					</div>
+<div
+							style="
+								font-size:18px;
+								font-weight:700;
+								margin-top:8px;
+								color:#2563eb;
+							"
+						>
+							
+						</div>
+					</div>
+<div
+							style="
+								font-size:18px;
+								font-weight:700;
+								margin-top:8px;
+								color:#2563eb;
+							"
 						>
 							
 						</div>
@@ -552,8 +588,7 @@ Object.assign(frappe.pages["hr-console"], {
 				filters: [
 					["Attendance Request", "reason", "=", "Work From Home"],
 					["Attendance Request", "from_date", "<=", to_date],
-					["Attendance Request", "to_date", ">=", from_date],
-					["Attendance Request", "docstatus", "=", 1]
+					["Attendance Request", "to_date", ">=", from_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-wfh-count").text(count || 0);
@@ -562,8 +597,7 @@ Object.assign(frappe.pages["hr-console"], {
 			frappe.db.count("Leave Application", {
 				filters: [
 					["Leave Application", "from_date", "<=", to_date],
-					["Leave Application", "to_date", ">=", from_date],
-					["Leave Application", "docstatus", "=", 1]
+					["Leave Application", "to_date", ">=", from_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-leave-application-count").text(count || 0);
@@ -572,8 +606,7 @@ Object.assign(frappe.pages["hr-console"], {
 			frappe.db.count("Expense Claim", {
 				filters: [
 					["Expense Claim", "posting_date", ">=", from_date],
-					["Expense Claim", "posting_date", "<=", to_date],
-					["Expense Claim", "docstatus", "=", 1]
+					["Expense Claim", "posting_date", "<=", to_date]
 				]
 			}).then((count) => {
 				$main.find("#hr-expense-claim-count").text(count || 0);
@@ -1844,195 +1877,35 @@ Object.assign(frappe.pages["hr-console"], {
 				}
 			);
 
-		// ==================================================
-		// ACTION CARD EMPLOYEE LIST
-		// ==================================================
-
-		function loadActionEmployees(type) {
-
-			currentPage = 0;
-			selectedEmployee = null;
-
-			$main
-				.find(".hr-stat-card")
-				.removeClass("active-card");
-
-			$main
-				.find(type.card)
-				.addClass("active-card");
-
-			const from_date = $fromDate.val();
-			const to_date = $toDate.val();
-
-			$list.html(`
-				<div style="
-					padding:30px;
-					text-align:center;
-					color:#888;
-				">
-					Loading ${type.label}...
-				</div>
-			`);
-
-			let filters = [];
-
-			if (type.doctype === "Attendance Request") {
-
-				filters = [
-					["Attendance Request", "reason", "=", "Work From Home"],
-					["Attendance Request", "from_date", "<=", to_date],
-					["Attendance Request", "to_date", ">=", from_date],
-					["Attendance Request", "docstatus", "=", 1]
-				];
-
-			} else if (type.doctype === "Leave Application") {
-
-				filters = [
-					["Leave Application", "from_date", "<=", to_date],
-					["Leave Application", "to_date", ">=", from_date],
-					["Leave Application", "docstatus", "=", 1]
-				];
-
-			} else if (type.doctype === "Expense Claim") {
-
-				filters = [
-					["Expense Claim", "posting_date", ">=", from_date],
-					["Expense Claim", "posting_date", "<=", to_date],
-					["Expense Claim", "docstatus", "=", 1]
-				];
-			}
-
-			frappe.db.get_list(type.doctype, {
-				fields: [
-					"name",
-					"employee",
-					"employee_name"
-				],
-				filters: filters,
-				limit_page_length: 0
-			}).then(records => {
-
-				$list.empty();
-
-				if (!records.length) {
-
-					$list.html(`
-						<div style="
-							padding:30px;
-							text-align:center;
-							color:#888;
-						">
-							No ${type.label} found.
-						</div>
-					`);
-
-					updatePagination(0);
-					return;
-				}
-
-				records.forEach(record => {
-
-					const employeeName =
-						frappe.utils.escape_html(
-							record.employee_name ||
-							record.employee ||
-							""
-						);
-
-					const employeeId =
-						frappe.utils.escape_html(
-							record.employee || ""
-						);
-
-					const $row = $(`
-						<div
-							class="hr-employee-row"
-							style="
-								padding:13px;
-								border-bottom:1px solid #eee;
-								cursor:pointer;
-								border-radius:6px;
-							"
-						>
-
-							<div style="
-								font-weight:600;
-							">
-								${employeeName}
-							</div>
-
-							<div style="
-								font-size:12px;
-								color:#888;
-								margin-top:4px;
-							">
-								${employeeId}
-							</div>
-
-						</div>
-					`);
-
-					$list.append($row);
-				});
-
-				updatePagination(records.length);
-
-			}).catch(err => {
-
-				console.error(
-					"Action card employee list error",
-					err
-				);
-
-				$list.html(`
-					<div style="
-						padding:20px;
-						color:#b91c1c;
-					">
-						Failed to load employees.
-					</div>
-				`);
-
-				updatePagination(0);
-			});
-		}
-
 		$main
 			.find("#hr-wfh-apply")
-			.on("click", function () {
-
-				loadActionEmployees({
-					card: "#hr-wfh-apply",
-					label: "Work From Home requests",
-					doctype: "Attendance Request"
-				});
-
-			});
+			.on(
+				"click",
+				function () {
+					frappe.new_doc(
+						"Attendance Request",
+						{ reason: "Work From Home" }
+					);
+				}
+			);
 
 		$main
 			.find("#hr-leave-application")
-			.on("click", function () {
-
-				loadActionEmployees({
-					card: "#hr-leave-application",
-					label: "Leave Applications",
-					doctype: "Leave Application"
-				});
-
-			});
+			.on(
+				"click",
+				function () {
+					frappe.new_doc("Leave Application");
+				}
+			);
 
 		$main
 			.find("#hr-expense-claim")
-			.on("click", function () {
-
-				loadActionEmployees({
-					card: "#hr-expense-claim",
-					label: "Expense Claims",
-					doctype: "Expense Claim"
-				});
-
-			});
-
+			.on(
+				"click",
+				function () {
+					frappe.new_doc("Expense Claim");
+				}
+			);
 
 		// ==================================================
 		// REVIEW
@@ -2117,36 +1990,6 @@ Object.assign(frappe.pages["hr-console"], {
 				loadEmployees(0);
 			}
 		);
-
-		// ==================================================
-		// REFRESH
-		// ==================================================
-
-		$main
-			.find("#hr-refresh")
-			.on(
-				"click",
-				function () {
-
-					fromDate =
-						$fromDate.val() ||
-						frappe.datetime.get_today();
-
-					toDate =
-						$toDate.val() ||
-						frappe.datetime.get_today();
-
-					selectedDate = fromDate;
-
-					currentPage = 0;
-					selectedEmployee = null;
-
-					loadOverview();
-					loadActionCardCounts();
-					loadDepartments();
-					loadEmployees(0);
-				}
-			);
 
 		// ==================================================
 		// INITIAL LOAD
