@@ -501,86 +501,41 @@ frappe.pages["hr-console"] = frappe.pages["hr-console"] || {}; Object.assign(fra
 
 						<hr>
 
-						<h4>Pay Summary</h4>
+						<h4>Salary Slips</h4>
 					`;
 
 					if (!salarySlips.length) {
 						html += `
-							<div style="
-								padding:15px;
-								color:#888;
-								border:1px solid #eee;
-								border-radius:8px;
-							">
-								No salary slips found. Payroll not yet run.
+							<div style="color:#888;">
+								No salary slips found.
 							</div>
 						`;
 					} else {
+						html += `<ul>`;
+
 						salarySlips.forEach((slip) => {
 							html += `
-								<div style="
-									border:1px solid #ddd;
-									border-radius:10px;
-									padding:15px;
-									margin-bottom:15px;
-								">
-									<div style="
-										display:grid;
-										grid-template-columns:repeat(2, minmax(0, 1fr));
-										gap:12px;
-									">
+								<li>
+									<strong>
+										${frappe.utils.escape_html(
+											slip.name
+										)}
+									</strong>
 
-										<div>
-											<strong>Salary Slip</strong><br>
-											${frappe.utils.escape_html(slip.name || "")}
-										</div>
+									—
+									${slip.start_date || ""}
+									→
+									${slip.end_date || ""}
 
-										<div>
-											<strong>Period</strong><br>
-											${slip.start_date || ""} → ${slip.end_date || ""}
-										</div>
-
-										<div>
-											<strong>Working Days</strong><br>
-											${slip.total_working_days ?? 0}
-										</div>
-
-										<div>
-											<strong>Payment Days</strong><br>
-											${slip.payment_days ?? 0}
-										</div>
-
-										<div>
-											<strong>Loss of Pay</strong><br>
-											${slip.leave_without_pay ?? 0}
-										</div>
-
-										<div>
-											<strong>Absent Days</strong><br>
-											${slip.absent_days ?? 0}
-										</div>
-
-										<div>
-											<strong>Gross Pay</strong><br>
-											${slip.gross_pay ?? 0}
-										</div>
-
-										<div>
-											<strong>Total Deduction</strong><br>
-											${slip.total_deduction ?? 0}
-										</div>
-
-										<div>
-											<strong>Net Pay</strong><br>
-											${slip.net_pay ?? 0}
-										</div>
-
-									</div>
-								</div>
+									—
+									Net:
+									${slip.net_pay || 0}
+								</li>
 							`;
 						});
-					}
 
+						html += `</ul>`;
+					}
 
 					$detail.html(html);
 				},

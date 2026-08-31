@@ -501,6 +501,9 @@ frappe.pages["hr-console"] = frappe.pages["hr-console"] || {}; Object.assign(fra
 
 						<hr>
 
+					html += `
+						<hr>
+
 						<h4>Pay Summary</h4>
 					`;
 

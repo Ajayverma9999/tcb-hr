@@ -10,25 +10,58 @@ def _ensure_hr_or_system_manager():
 
 @frappe.whitelist()
 def get_overview(from_date=None, to_date=None):
-    """Return basic HR dashboard numbers: headcount and pending attendance reviews."""
+    """Return HR dashboard overview numbers."""
     _ensure_hr_or_system_manager()
 
-    headcount = frappe.db.count("Employee", {"status": "Active"})
+    today = getdate()
 
-    # reuse attendance job utility if available
+    # Active employee count
+    headcount = frappe.db.count(
+        "Employee",
+        {"status": "Active"}
+    )
+
+    # Present employees today
+    present_today = frappe.db.count(
+        "Attendance",
+        {
+            "attendance_date": today,
+            "status": "Present",
+        }
+    )
+
+    # Approved leaves covering today
+    on_leave_today = frappe.db.sql(
+        """
+        SELECT COUNT(DISTINCT employee)
+        FROM `tabLeave Application`
+        WHERE status = 'Approved'
+          AND from_date <= %s
+          AND to_date >= %s
+        """,
+        (today, today),
+    )[0][0]
+
+    # Pending attendance reviews
     pending = []
+
     try:
         from tcb_customization.api import attendance_job
 
-        pending = attendance_job.get_pending_reviews(from_date=from_date, to_date=to_date)
+        pending = attendance_job.get_pending_reviews(
+            from_date=from_date,
+            to_date=to_date
+        )
+
     except Exception:
         pending = []
 
     return {
         "headcount": headcount,
+        "present_today": present_today,
+        "on_leave_today": on_leave_today or 0,
         "pending_attendance_reviews": len(pending),
     }
-
 
 @frappe.whitelist()
 def get_employee_list(start=0, limit=50, search=None, department=None):
@@ -105,8 +138,19 @@ def get_employee_detail(employee, from_date, to_date):
 
     salary_slips = frappe.get_all(
         "Salary Slip",
-        filters={"employee": employee, "start_date": ["< =", to_date], "end_date": [">=", from_date]},
-        fields=["name", "start_date", "end_date", "net_pay"],
+        filters={"employee": employee, "start_date": ["<=", to_date], "end_date": [">=", from_date]},
+        fields=[
+            "name",
+            "start_date",
+            "end_date",
+            "total_working_days",
+            "payment_days",
+            "leave_without_pay",
+            "absent_days",
+            "gross_pay",
+            "total_deduction",
+            "net_pay",
+        ],
         order_by="start_date desc",
     )
 

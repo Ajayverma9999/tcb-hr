@@ -89,7 +89,6 @@ doc_events.update({
 # Client-side Timesheet customisations
 doctype_js = {"Timesheet": "public/js/timesheet.js"}
 # Simple HR Console page JS (loads when a Page named "hr-console" is created in Desk)
-page_js = {"hr-console": "public/js/hr_console.js"}
 # Apps
 # ------------------
 
