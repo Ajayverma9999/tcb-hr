@@ -10,64 +10,23 @@ Object.assign(frappe.pages["hr-console"], {
 
 		const $main = $(page.main);
 
-		// ==================================================
-		// STATE
-		// ==================================================
+		// --------------------------------------------------
+		// State
+		// --------------------------------------------------
 
 		let currentPage = 0;
 		let currentStatus = "Active";
 		let selectedDate = frappe.datetime.get_today();
-		let selectedEmployee = null;
 		const pageSize = 50;
 
-		// ==================================================
+		// --------------------------------------------------
 		// HTML
-		// ==================================================
+		// --------------------------------------------------
 
 		$main.html(`
 			<div class="hr-console" style="padding:20px;">
 
-				<style>
-					.hr-console .hr-stat-card {
-						transition: all .15s ease;
-					}
-
-					.hr-console .hr-stat-card:hover {
-						transform: translateY(-2px);
-						box-shadow: 0 4px 14px rgba(0,0,0,.08);
-					}
-
-					.hr-console .hr-stat-card.active-card {
-						border-color: var(--primary-color) !important;
-						box-shadow: 0 0 0 2px rgba(37,99,235,.10);
-					}
-
-					.hr-console .hr-employee-row {
-						transition: background .12s ease;
-					}
-
-					.hr-console .hr-employee-row.selected {
-						background: #f0f4ff !important;
-					}
-
-					@media (max-width: 900px) {
-						.hr-console .hr-summary-grid {
-							grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-						}
-
-						.hr-console .hr-content-grid {
-							grid-template-columns: 1fr !important;
-						}
-					}
-
-					@media (max-width: 550px) {
-						.hr-console .hr-summary-grid {
-							grid-template-columns: 1fr !important;
-						}
-					}
-				</style>
-
-				<!-- HEADER -->
+				<!-- Header -->
 				<div style="
 					display:flex;
 					justify-content:space-between;
@@ -83,11 +42,11 @@ Object.assign(frappe.pages["hr-console"], {
 						</h2>
 
 						<div style="color:#888;">
-							Attendance & Employee Management
+							HR management dashboard
 						</div>
 					</div>
 
-					<div style="min-width:220px;">
+					<div style="min-width:200px;">
 						<label style="
 							display:block;
 							font-size:13px;
@@ -107,19 +66,17 @@ Object.assign(frappe.pages["hr-console"], {
 
 				</div>
 
-				<!-- SUMMARY CARDS -->
-				<div
-					class="hr-summary-grid"
-					style="
-						display:grid;
-						grid-template-columns:repeat(5,minmax(0,1fr));
-						gap:16px;
-						margin-bottom:20px;
-					"
-				>
+				<!-- Attendance Summary -->
+				<div style="
+					display:grid;
+					grid-template-columns:repeat(5, minmax(0, 1fr));
+					gap:16px;
+					margin-bottom:20px;
+				">
 
+					<!-- Active -->
 					<div
-						class="hr-stat-card active-card"
+						class="hr-stat-card"
 						data-status="Active"
 						style="
 							padding:20px;
@@ -145,6 +102,7 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 					</div>
 
+					<!-- Present -->
 					<div
 						class="hr-stat-card"
 						data-status="Present"
@@ -172,6 +130,7 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 					</div>
 
+					<!-- Absent -->
 					<div
 						class="hr-stat-card"
 						data-status="Absent"
@@ -199,6 +158,7 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 					</div>
 
+					<!-- Pending -->
 					<div
 						class="hr-stat-card"
 						data-status="Pending"
@@ -226,6 +186,7 @@ Object.assign(frappe.pages["hr-console"], {
 						</div>
 					</div>
 
+					<!-- Leave -->
 					<div
 						class="hr-stat-card"
 						data-status="On Leave"
@@ -255,7 +216,7 @@ Object.assign(frappe.pages["hr-console"], {
 
 				</div>
 
-				<!-- SELECTED STATUS -->
+				<!-- Selected Status -->
 				<div
 					id="hr-selected-status"
 					style="
@@ -264,10 +225,10 @@ Object.assign(frappe.pages["hr-console"], {
 						color:#555;
 					"
 				>
-					Active Employees — ${selectedDate}
+					Active Employees
 				</div>
 
-				<!-- ACTIONS -->
+				<!-- Actions -->
 				<div style="
 					display:flex;
 					gap:10px;
@@ -291,17 +252,14 @@ Object.assign(frappe.pages["hr-console"], {
 
 				</div>
 
-				<!-- CONTENT -->
-				<div
-					class="hr-content-grid"
-					style="
-						display:grid;
-						grid-template-columns:35% 65%;
-						gap:20px;
-					"
-				>
+				<!-- Employee Section -->
+				<div style="
+					display:grid;
+					grid-template-columns:35% 65%;
+					gap:20px;
+				">
 
-					<!-- EMPLOYEE LIST -->
+					<!-- Left -->
 					<div style="
 						border:1px solid #ddd;
 						border-radius:10px;
@@ -317,14 +275,12 @@ Object.assign(frappe.pages["hr-console"], {
 							display:flex;
 							gap:8px;
 							margin-bottom:12px;
-							flex-wrap:wrap;
 						">
 
 							<input
 								id="hr-search"
 								class="form-control"
 								placeholder="Search employee..."
-								style="flex:1;min-width:150px;"
 							/>
 
 							<select
@@ -346,7 +302,6 @@ Object.assign(frappe.pages["hr-console"], {
 						<div style="
 							display:flex;
 							justify-content:space-between;
-							align-items:center;
 							margin-top:15px;
 						">
 
@@ -372,7 +327,7 @@ Object.assign(frappe.pages["hr-console"], {
 
 					</div>
 
-					<!-- DETAILS -->
+					<!-- Right -->
 					<div style="
 						border:1px solid #ddd;
 						border-radius:10px;
@@ -400,105 +355,91 @@ Object.assign(frappe.pages["hr-console"], {
 			</div>
 		`);
 
-		// ==================================================
-		// REFERENCES
-		// ==================================================
+		// --------------------------------------------------
+		// References
+		// --------------------------------------------------
 
-		const $list = $main.find("#hr-employee-list");
-		const $detail = $main.find("#hr-detail");
-		const $search = $main.find("#hr-search");
-		const $department = $main.find("#hr-department");
-		const $date = $main.find("#hr-attendance-date");
+		const $list =
+			$main.find("#hr-employee-list");
 
-		// ==================================================
-		// STATUS LABEL
-		// ==================================================
+		const $detail =
+			$main.find("#hr-detail");
 
-		function updateStatusLabel() {
-			$main
-				.find("#hr-selected-status")
-				.text(
-					`${currentStatus} Employees — ${selectedDate}`
-				);
-		}
+		const $search =
+			$main.find("#hr-search");
 
-		// ==================================================
-		// OVERVIEW
-		// ==================================================
+		const $department =
+			$main.find("#hr-department");
+
+		const $date =
+			$main.find("#hr-attendance-date");
+
+		// --------------------------------------------------
+		// Overview
+		// --------------------------------------------------
 
 		function loadOverview() {
-
-			$main.find("#hr-headcount").text("...");
-			$main.find("#hr-present").text("...");
-			$main.find("#hr-absent").text("...");
-			$main.find("#hr-pending").text("...");
-			$main.find("#hr-leave").text("...");
-
 			frappe.call({
-
 				method:
 					"tcb_customization.api.hr_console.get_overview",
 
 				args: {
-					from_date: selectedDate,
-					to_date: selectedDate,
 					attendance_date: selectedDate,
 				},
 
 				callback(r) {
-
 					const data = r.message || {};
 
 					$main
 						.find("#hr-headcount")
-						.text(data.headcount ?? 0);
+						.text(
+							data.headcount ?? "—"
+						);
 
 					$main
 						.find("#hr-present")
-						.text(data.present ?? 0);
+						.text(
+							data.present ?? "—"
+						);
 
 					$main
 						.find("#hr-absent")
-						.text(data.absent ?? 0);
+						.text(
+							data.absent ?? "—"
+						);
 
 					$main
 						.find("#hr-pending")
-						.text(data.pending ?? 0);
+						.text(
+							data.pending ?? "—"
+						);
 
 					$main
 						.find("#hr-leave")
-						.text(data.on_leave ?? 0);
+						.text(
+							data.on_leave ?? "—"
+						);
 				},
 
 				error(err) {
-
 					console.error(
 						"HR Console overview error",
 						err
 					);
-
-					$main.find("#hr-headcount").text("—");
-					$main.find("#hr-present").text("—");
-					$main.find("#hr-absent").text("—");
-					$main.find("#hr-pending").text("—");
-					$main.find("#hr-leave").text("—");
 				},
 			});
 		}
 
-		// ==================================================
-		// DEPARTMENTS
-		// ==================================================
+		// --------------------------------------------------
+		// Departments
+		// --------------------------------------------------
 
 		function loadDepartments() {
-
 			frappe.call({
-
 				method:
 					"tcb_customization.api.hr_console.get_departments",
 
 				callback(r) {
-
 					const departments =
 						r.message || [];
 
@@ -509,73 +450,61 @@ Object.assign(frappe.pages["hr-console"], {
 					departments.forEach(
 						(department) => {
 
-							const safe =
-								frappe.utils.escape_html(
-									department
-								);
-
 							$department.append(`
-								<option value="${safe}">
-									${safe}
+								<option
+									value="${frappe.utils.escape_html(
+										department
+									)}"
+								>
+									${frappe.utils.escape_html(
+										department
+									)}
 								</option>
 							`);
+
 						}
 					);
 				},
 			});
 		}
 
-		// ==================================================
-		// EMPLOYEE LIST
-		// ==================================================
+		// --------------------------------------------------
+		// Employee List
+		// --------------------------------------------------
 
 		function loadEmployees(pageNumber = 0) {
 
-			currentPage = Math.max(
-				0,
-				pageNumber
-			);
+			currentPage = pageNumber;
 
 			const start =
 				currentPage * pageSize;
 
 			$list.html(`
 				<div style="
-					padding:25px;
+					padding:20px;
 					text-align:center;
 					color:#888;
 				">
-					Loading ${frappe.utils.escape_html(
-						currentStatus
-					).toLowerCase()} employees...
+					Loading employees...
 				</div>
 			`);
 
+			let method =
+				"tcb_customization.api.hr_console.get_attendance_employees";
+
+			let args = {
+				attendance_date: selectedDate,
+				status: currentStatus,
+				start: start,
+				limit: pageSize,
+				search: $search.val() || "",
+				department:
+					$department.val() || "",
+			};
+
 			frappe.call({
-
-				method:
-					"tcb_customization.api.hr_console.get_attendance_employees",
-
-				args: {
-
-					attendance_date:
-						selectedDate,
-
-					status:
-						currentStatus,
-
-					start:
-						start,
-
-					limit:
-						pageSize,
-
-					search:
-						$search.val() || "",
-
-					department:
-						$department.val() || "",
-				},
+				method: method,
+				args: args,
 
 				callback(r) {
 
@@ -588,34 +517,19 @@ Object.assign(frappe.pages["hr-console"], {
 
 						$list.html(`
 							<div style="
-								padding:30px 15px;
+								padding:20px;
 								color:#888;
 								text-align:center;
 							">
-
-								<div style="
-									font-size:28px;
-									margin-bottom:8px;
-								">
-									No employees
-								</div>
-
-								<div>
-									No ${frappe.utils.escape_html(
-										currentStatus
-									).toLowerCase()}
-									employees found for
-									${frappe.utils.escape_html(
-										selectedDate
-									)}.
-								</div>
-
+								No employees found.
 							</div>
 						`);
 
-						updatePagination(
-							employees.length
-						);
+						$main
+							.find("#hr-page")
+							.text(
+								`Page ${currentPage + 1}`
+							);
 
 						return;
 					}
@@ -626,11 +540,6 @@ Object.assign(frappe.pages["hr-console"], {
 							const name =
 								frappe.utils.escape_html(
 									employee.employee_name || ""
-								);
-
-							const employeeId =
-								frappe.utils.escape_html(
-									employee.name || ""
 								);
 
 							const designation =
@@ -648,64 +557,26 @@ Object.assign(frappe.pages["hr-console"], {
 									employee.attendance_status || ""
 								);
 
-							const statusClass =
-								status === "Present"
-									? "green"
-									: status === "Absent"
-										? "red"
-										: status === "On Leave"
-											? "orange"
-											: status === "Pending"
-												? "blue"
-												: "gray";
-
-							const isSelected =
-								selectedEmployee ===
-								employee.name;
-
 							const $row = $(`
 								<div
-									class="
-										hr-employee-row
-										${isSelected ? "selected" : ""}
-									"
+									class="hr-employee-row"
 									style="
-										padding:13px;
+										padding:12px;
 										border-bottom:1px solid #eee;
 										cursor:pointer;
-										border-radius:6px;
 									"
 								>
 
 									<div style="
-										display:flex;
-										justify-content:space-between;
-										gap:8px;
-										align-items:flex-start;
+										font-weight:600;
 									">
-
-										<div style="
-											font-weight:600;
-										">
-											${name}
-										</div>
-
-										<div style="
-											font-size:11px;
-											font-weight:600;
-											padding:3px 7px;
-											border-radius:10px;
-											background:#f3f4f6;
-										">
-											${status}
-										</div>
-
+										${name}
 									</div>
 
 									<div style="
 										font-size:12px;
 										color:#888;
-										margin-top:4px;
+										margin-top:3px;
 									">
 										${designation}
 										${
@@ -718,11 +589,11 @@ Object.assign(frappe.pages["hr-console"], {
 									</div>
 
 									<div style="
-										font-size:11px;
-										color:#999;
+										font-size:12px;
 										margin-top:5px;
+										font-weight:600;
 									">
-										${employeeId}
+										Status: ${status}
 									</div>
 
 								</div>
@@ -732,55 +603,31 @@ Object.assign(frappe.pages["hr-console"], {
 								"click",
 								function () {
 
-									selectedEmployee =
-										employee.name;
-
-									$list
-										.find(".hr-employee-row")
-										.removeClass(
-											"selected"
-										);
-
-									$row.addClass(
-										"selected"
-									);
-
 									loadEmployeeDetail(
 										employee.name,
 										employee.employee_name
 									);
+
 								}
 							);
 
 							$row.on(
 								"mouseenter",
 								function () {
-
-									if (
-										selectedEmployee !==
-										employee.name
-									) {
-										$(this).css(
-											"background",
-											"#f7f7f7"
-										);
-									}
+									$(this).css(
+										"background",
+										"#f7f7f7"
+									);
 								}
 							);
 
 							$row.on(
 								"mouseleave",
 								function () {
-
-									if (
-										selectedEmployee !==
-										employee.name
-									) {
-										$(this).css(
-											"background",
-											"white"
-										);
-									}
+									$(this).css(
+										"background",
+										"white"
+									);
 								}
 							);
 
@@ -788,13 +635,14 @@ Object.assign(frappe.pages["hr-console"], {
 						}
 					);
 
-					updatePagination(
-						employees.length
-					);
+					$main
+						.find("#hr-page")
+						.text(
+							`Page ${currentPage + 1}`
+						);
 				},
 
 				error(err) {
-
 					console.error(
 						"Employee list error",
 						err
@@ -803,47 +651,18 @@ Object.assign(frappe.pages["hr-console"], {
 					$list.html(`
 						<div style="
 							padding:20px;
-							color:#b91c1c;
+							color:red;
 						">
 							Failed to load employees.
 						</div>
 					`);
-
-					updatePagination(0);
 				},
 			});
 		}
 
-		// ==================================================
-		// PAGINATION
-		// ==================================================
-
-		function updatePagination(resultLength) {
-
-			$main
-				.find("#hr-page")
-				.text(
-					`Page ${currentPage + 1}`
-				);
-
-			$main
-				.find("#hr-prev")
-				.prop(
-					"disabled",
-					currentPage === 0
-				);
-
-			$main
-				.find("#hr-next")
-				.prop(
-					"disabled",
-					resultLength < pageSize
-				);
-		}
-
-		// ==================================================
-		// EMPLOYEE DETAIL
-		// ==================================================
+		// --------------------------------------------------
+		// Employee Detail
+		// --------------------------------------------------
 
 		function loadEmployeeDetail(
 			employee,
@@ -852,8 +671,7 @@ Object.assign(frappe.pages["hr-console"], {
 
 			$detail.html(`
 				<div style="
-					padding:30px;
-					text-align:center;
+					padding:20px;
 					color:#888;
 				">
 					Loading employee details...
@@ -880,26 +698,23 @@ Object.assign(frappe.pages["hr-console"], {
 				);
 
 			const fromDate =
-				frappe.datetime.obj_to_str(from);
+				frappe.datetime.obj_to_str(
+					from
+				);
 
 			const toDate =
-				frappe.datetime.obj_to_str(to);
+				frappe.datetime.obj_to_str(
+					to
+				);
 
 			frappe.call({
-
 				method:
 					"tcb_customization.api.hr_console.get_employee_detail",
 
 				args: {
-
-					employee:
-						employee,
-
-					from_date:
-						fromDate,
-
-					to_date:
-						toDate,
+					employee: employee,
+					from_date: fromDate,
+					to_date: toDate,
 				},
 
 				callback(r) {
@@ -907,217 +722,35 @@ Object.assign(frappe.pages["hr-console"], {
 					const data =
 						r.message || {};
 
-					const employeeInfo =
-						data.employee || {};
-
 					const attendance =
 						data.attendance || [];
 
 					const salarySlips =
 						data.salary_slips || [];
 
-					const attendanceMap = {};
-
-					attendance.forEach(
-						(row) => {
-
-							attendanceMap[
-								row.attendance_date
-							] = row;
-
-						}
-					);
-
-					const selectedAttendance =
-						attendanceMap[selectedDate];
-
-					const selectedStatus =
-						selectedAttendance?.status ||
-						"Pending";
-
 					let html = `
-
-						<!-- PROFILE -->
+						<h3 style="margin-top:0;">
+							${frappe.utils.escape_html(
+								employeeName
+							)}
+						</h3>
 
 						<div style="
-							display:flex;
-							justify-content:space-between;
-							align-items:flex-start;
-							gap:15px;
-							flex-wrap:wrap;
+							color:#888;
+							font-size:13px;
+							margin-bottom:10px;
 						">
-
-							<div>
-
-								<h3 style="
-									margin-top:0;
-									margin-bottom:5px;
-								">
-									${frappe.utils.escape_html(
-										employeeInfo.employee_name ||
-										employeeName ||
-										""
-									)}
-								</h3>
-
-								<div style="
-									color:#888;
-									font-size:13px;
-								">
-									${frappe.utils.escape_html(
-										employeeInfo.name ||
-										employee
-									)}
-								</div>
-
-							</div>
-
-							<div style="
-								padding:6px 10px;
-								border-radius:12px;
-								background:#f3f4f6;
-								font-size:12px;
-								font-weight:600;
-							">
-								${frappe.utils.escape_html(
-									selectedStatus
-								)}
-							</div>
-
+							Selected date:
+							${selectedDate}
 						</div>
 
 						<hr>
 
-						<!-- EMPLOYEE INFO -->
-
-						<div style="
-							display:grid;
-							grid-template-columns:
-								repeat(2,minmax(0,1fr));
-							gap:12px;
-							margin-bottom:20px;
-						">
-
-							<div>
-								<strong>Department</strong>
-								<br>
-								${frappe.utils.escape_html(
-									employeeInfo.department || "-"
-								)}
-							</div>
-
-							<div>
-								<strong>Designation</strong>
-								<br>
-								${frappe.utils.escape_html(
-									employeeInfo.designation || "-"
-								)}
-							</div>
-
-							<div>
-								<strong>Company</strong>
-								<br>
-								${frappe.utils.escape_html(
-									employeeInfo.company || "-"
-								)}
-							</div>
-
-							<div>
-								<strong>Date of Joining</strong>
-								<br>
-								${employeeInfo.date_of_joining || "-"}
-							</div>
-
-						</div>
-
-						<!-- SELECTED DATE -->
-
-						<h4>
-							Attendance — ${selectedDate}
-						</h4>
-
-						<div style="
-							border:1px solid #ddd;
-							border-radius:10px;
-							padding:15px;
-							margin-bottom:20px;
-						">
-
-							<div style="
-								display:grid;
-								grid-template-columns:
-									repeat(4,minmax(0,1fr));
-								gap:12px;
-							">
-
-								<div>
-									<div style="
-										font-size:12px;
-										color:#888;
-									">
-										Status
-									</div>
-
-									<strong>
-										${frappe.utils.escape_html(
-											selectedStatus
-										)}
-									</strong>
-								</div>
-
-								<div>
-									<div style="
-										font-size:12px;
-										color:#888;
-									">
-										In Time
-									</div>
-
-									<strong>
-										${selectedAttendance?.in_time || "-"}
-									</strong>
-								</div>
-
-								<div>
-									<div style="
-										font-size:12px;
-										color:#888;
-									">
-										Out Time
-									</div>
-
-									<strong>
-										${selectedAttendance?.out_time || "-"}
-									</strong>
-								</div>
-
-								<div>
-									<div style="
-										font-size:12px;
-										color:#888;
-									">
-										Working Hours
-									</div>
-
-									<strong>
-										${selectedAttendance?.working_hours ?? "-"}
-									</strong>
-								</div>
-
-							</div>
-
-						</div>
-
-						<!-- MONTH ATTENDANCE -->
-
-						<h4>
-							Monthly Attendance
-						</h4>
+						<h4>Attendance</h4>
 
 						<div style="
 							max-height:300px;
 							overflow:auto;
-							margin-bottom:20px;
 						">
 
 							<table class="table table-bordered">
@@ -1126,46 +759,41 @@ Object.assign(frappe.pages["hr-console"], {
 									<tr>
 										<th>Date</th>
 										<th>Status</th>
-										<th>In</th>
-										<th>Out</th>
-										<th>Hours</th>
 									</tr>
 								</thead>
 
 								<tbody>
 					`;
 
-					let current =
+					const attendanceMap = {};
+
+					attendance.forEach(
+						(row) => {
+
+							attendanceMap[
+								row.attendance_date
+							] = row.status;
+
+						}
+					);
+
+					let date =
 						new Date(from);
 
-					while (current <= to) {
+					while (date <= to) {
 
 						const dateString =
 							frappe.datetime.obj_to_str(
-								current
+								date
 							);
 
-						const row =
+						const status =
 							attendanceMap[
 								dateString
-							];
-
-						const status =
-							row?.status ||
-							"Pending";
+							] || "Pending";
 
 						html += `
-							<tr
-								style="
-									${
-										dateString ===
-										selectedDate
-											? "font-weight:700;background:#f7f9ff;"
-											: ""
-									}
-								"
-							>
-
+							<tr>
 								<td>
 									${dateString}
 								</td>
@@ -1175,24 +803,11 @@ Object.assign(frappe.pages["hr-console"], {
 										status
 									)}
 								</td>
-
-								<td>
-									${row?.in_time || "-"}
-								</td>
-
-								<td>
-									${row?.out_time || "-"}
-								</td>
-
-								<td>
-									${row?.working_hours ?? "-"}
-								</td>
-
 							</tr>
 						`;
 
-						current.setDate(
-							current.getDate() + 1
+						date.setDate(
+							date.getDate() + 1
 						);
 					}
 
@@ -1203,11 +818,9 @@ Object.assign(frappe.pages["hr-console"], {
 
 						</div>
 
-						<!-- PAYROLL -->
+						<hr>
 
-						<h4>
-							Pay Summary
-						</h4>
+						<h4>Pay Summary</h4>
 					`;
 
 					if (!salarySlips.length) {
@@ -1240,7 +853,10 @@ Object.assign(frappe.pages["hr-console"], {
 										<div style="
 											display:grid;
 											grid-template-columns:
-												repeat(2,minmax(0,1fr));
+												repeat(
+													2,
+													minmax(0,1fr)
+												);
 											gap:12px;
 										">
 
@@ -1324,35 +940,20 @@ Object.assign(frappe.pages["hr-console"], {
 
 									</div>
 								`;
+
 							}
 						);
+
 					}
 
 					$detail.html(html);
 				},
-
-				error(err) {
-
-					console.error(
-						"Employee detail error",
-						err
-					);
-
-					$detail.html(`
-						<div style="
-							padding:20px;
-							color:#b91c1c;
-						">
-							Failed to load employee details.
-						</div>
-					`);
-				},
 			});
 		}
 
-		// ==================================================
-		// ATTENDANCE REVIEW QUEUE
-		// ==================================================
+		// --------------------------------------------------
+		// Attendance Review Queue
+		// --------------------------------------------------
 
 		function openReviewQueue() {
 
@@ -1423,6 +1024,7 @@ Object.assign(frappe.pages["hr-console"], {
 							fieldtype:
 								"HTML",
 						},
+
 					],
 
 					primary_action_label:
@@ -1449,6 +1051,7 @@ Object.assign(frappe.pages["hr-console"], {
 											index
 										]
 									);
+
 								}
 							);
 
@@ -1488,6 +1091,7 @@ Object.assign(frappe.pages["hr-console"], {
 
 									reason:
 										values.reason || "",
+
 								})
 							);
 
@@ -1503,6 +1107,7 @@ Object.assign(frappe.pages["hr-console"], {
 										rows:
 											payload,
 									}),
+
 							},
 
 							callback() {
@@ -1518,9 +1123,13 @@ Object.assign(frappe.pages["hr-console"], {
 								loadEmployees(
 									currentPage
 								);
+
 							},
+
 						});
+
 					},
+
 				});
 
 			dialog._reviewRows = [];
@@ -1561,6 +1170,7 @@ Object.assign(frappe.pages["hr-console"], {
 							dialog.get_value(
 								"to_date"
 							),
+
 					},
 
 					callback(r) {
@@ -1651,6 +1261,7 @@ Object.assign(frappe.pages["hr-console"], {
 
 										</tr>
 									`;
+
 								}
 							);
 
@@ -1684,10 +1295,14 @@ Object.assign(frappe.pages["hr-console"], {
 												":checked"
 											)
 										);
+
 								}
 							);
+
 					},
+
 				});
+
 			}
 
 			dialog
@@ -1709,9 +1324,9 @@ Object.assign(frappe.pages["hr-console"], {
 			loadReviews();
 		}
 
-		// ==================================================
-		// CARD CLICK
-		// ==================================================
+		// --------------------------------------------------
+		// Card Click
+		// --------------------------------------------------
 
 		$main
 			.find(".hr-stat-card")
@@ -1720,42 +1335,28 @@ Object.assign(frappe.pages["hr-console"], {
 				function () {
 
 					currentStatus =
-						$(this).data("status");
+						$(this).data(
+							"status"
+						);
 
 					currentPage = 0;
 
 					$main
-						.find(".hr-stat-card")
-						.removeClass(
-							"active-card"
+						.find(
+							"#hr-selected-status"
+						)
+						.text(
+							`${currentStatus} Employees — ${selectedDate}`
 						);
-
-					$(this)
-						.addClass(
-							"active-card"
-						);
-
-					selectedEmployee = null;
-
-					$detail.html(`
-						<h4>
-							Employee Details
-						</h4>
-
-						<p style="color:#888;">
-							Select an employee from the list.
-						</p>
-					`);
-
-					updateStatusLabel();
 
 					loadEmployees(0);
+
 				}
 			);
 
-		// ==================================================
-		// DATE CHANGE
-		// ==================================================
+		// --------------------------------------------------
+		// Date Change
+		// --------------------------------------------------
 
 		$date.on(
 			"change",
@@ -1766,29 +1367,25 @@ Object.assign(frappe.pages["hr-console"], {
 					frappe.datetime.get_today();
 
 				currentPage = 0;
-				selectedEmployee = null;
 
-				updateStatusLabel();
-
-				$detail.html(`
-					<h4>
-						Employee Details
-					</h4>
-
-					<p style="color:#888;">
-						Select an employee from the list.
-					</p>
-				`);
+				$main
+					.find(
+						"#hr-selected-status"
+					)
+					.text(
+						`${currentStatus} Employees — ${selectedDate}`
+					);
 
 				loadOverview();
 
 				loadEmployees(0);
+
 			}
 		);
 
-		// ==================================================
-		// REFRESH
-		// ==================================================
+		// --------------------------------------------------
+		// Refresh
+		// --------------------------------------------------
 
 		$main
 			.find("#hr-refresh")
@@ -1804,18 +1401,12 @@ Object.assign(frappe.pages["hr-console"], {
 						currentPage
 					);
 
-					if (selectedEmployee) {
-						loadEmployeeDetail(
-							selectedEmployee,
-							""
-						);
-					}
 				}
 			);
 
-		// ==================================================
-		// REVIEW
-		// ==================================================
+		// --------------------------------------------------
+		// Review
+		// --------------------------------------------------
 
 		$main
 			.find("#hr-review")
@@ -1824,9 +1415,9 @@ Object.assign(frappe.pages["hr-console"], {
 				openReviewQueue
 			);
 
-		// ==================================================
-		// PAGINATION
-		// ==================================================
+		// --------------------------------------------------
+		// Pagination
+		// --------------------------------------------------
 
 		$main
 			.find("#hr-prev")
@@ -1834,12 +1425,16 @@ Object.assign(frappe.pages["hr-console"], {
 				"click",
 				function () {
 
-					if (currentPage > 0) {
+					if (
+						currentPage > 0
+					) {
 
 						loadEmployees(
 							currentPage - 1
 						);
+
 					}
+
 				}
 			);
 
@@ -1852,12 +1447,13 @@ Object.assign(frappe.pages["hr-console"], {
 					loadEmployees(
 						currentPage + 1
 					);
+
 				}
 			);
 
-		// ==================================================
-		// SEARCH
-		// ==================================================
+		// --------------------------------------------------
+		// Search
+		// --------------------------------------------------
 
 		let searchTimer;
 
@@ -1873,35 +1469,31 @@ Object.assign(frappe.pages["hr-console"], {
 					setTimeout(
 						function () {
 
-							selectedEmployee = null;
-
 							loadEmployees(0);
 
 						},
 						400
 					);
+
 			}
 		);
 
-		// ==================================================
-		// DEPARTMENT
-		// ==================================================
+		// --------------------------------------------------
+		// Department
+		// --------------------------------------------------
 
 		$department.on(
 			"change",
 			function () {
 
-				selectedEmployee = null;
-
 				loadEmployees(0);
+
 			}
 		);
 
-		// ==================================================
-		// INITIAL LOAD
-		// ==================================================
-
-		updateStatusLabel();
+		// --------------------------------------------------
+		// Initial Load
+		// --------------------------------------------------
 
 		loadOverview();
 

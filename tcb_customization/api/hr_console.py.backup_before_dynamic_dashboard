@@ -1,0 +1,534 @@
+import frappe
+from frappe import _
+from frappe.utils import getdate, today
+
+
+def _ensure_hr_or_system_manager():
+    if not (
+        ("HR Manager" in frappe.get_roles())
+        or ("System Manager" in frappe.get_roles())
+    ):
+        frappe.throw(
+            _("You are not permitted to access this resource."),
+            frappe.PermissionError,
+        )
+
+
+def _get_attendance_status_map(attendance_date):
+    """
+    Return attendance status by employee for a particular date.
+    """
+    rows = frappe.get_all(
+        "Attendance",
+        filters={
+            "attendance_date": attendance_date,
+        },
+        fields=[
+            "employee",
+            "status",
+        ],
+    )
+
+    return {
+        row.employee: row.status
+        for row in rows
+    }
+
+
+def _get_on_leave_employees(attendance_date):
+    """
+    Return employees who have an approved leave covering the selected date.
+    """
+    rows = frappe.db.sql(
+        """
+        SELECT DISTINCT employee
+        FROM `tabLeave Application`
+        WHERE status = 'Approved'
+          AND from_date <= %s
+          AND to_date >= %s
+        """,
+        (attendance_date, attendance_date),
+        as_dict=True,
+    )
+
+    return {row.employee for row in rows}
+
+
+@frappe.whitelist()
+def get_overview(attendance_date=None, from_date=None, to_date=None):
+    """
+    Return HR Console attendance overview for the selected date.
+
+    Default date = today.
+    """
+
+    _ensure_hr_or_system_manager()
+
+    attendance_date = getdate(attendance_date or today())
+
+    # --------------------------------------------------
+    # Active Headcount
+    # --------------------------------------------------
+
+    headcount = frappe.db.count(
+        "Employee",
+        {
+            "status": "Active",
+        },
+    )
+
+    # --------------------------------------------------
+    # Attendance data
+    # --------------------------------------------------
+
+    attendance_status = _get_attendance_status_map(
+        attendance_date
+    )
+
+    # --------------------------------------------------
+    # Approved Leave
+    # --------------------------------------------------
+
+    on_leave_employees = _get_on_leave_employees(
+        attendance_date
+    )
+
+    # --------------------------------------------------
+    # Count employees
+    # --------------------------------------------------
+
+    present_count = 0
+    absent_count = 0
+    pending_count = 0
+    leave_count = 0
+
+    active_employees = frappe.get_all(
+        "Employee",
+        filters={
+            "status": "Active",
+        },
+        fields=[
+            "name",
+        ],
+    )
+
+    for employee in active_employees:
+
+        employee_id = employee.name
+
+        # Approved leave gets priority
+        if employee_id in on_leave_employees:
+            leave_count += 1
+            continue
+
+        status = attendance_status.get(employee_id)
+
+        if status == "Present":
+            present_count += 1
+
+        elif status == "Absent":
+            absent_count += 1
+
+        else:
+            # No attendance record = Pending
+            pending_count += 1
+
+    # --------------------------------------------------
+    # Pending Attendance Reviews
+    # --------------------------------------------------
+
+    pending_reviews = []
+
+    try:
+        from tcb_customization.api import attendance_job
+
+        pending_reviews = attendance_job.get_pending_reviews(
+            from_date=from_date or attendance_date,
+            to_date=to_date or attendance_date,
+        )
+
+    except Exception:
+        pending_reviews = []
+
+    return {
+        "date": str(attendance_date),
+        "headcount": headcount,
+        "present": present_count,
+        "present_today": present_count,
+        "absent": absent_count,
+        "on_leave": leave_count,
+        "on_leave_today": leave_count,
+        "pending": pending_count,
+        "pending_attendance": pending_count,
+        "pending_attendance_reviews": len(pending_reviews),
+    }
+
+
+@frappe.whitelist()
+def get_attendance_employees(
+    attendance_date=None,
+    status=None,
+    start=0,
+    limit=50,
+    search=None,
+    department=None,
+):
+    """
+    Return employees according to attendance status
+    for the selected date.
+
+    Supported statuses:
+
+    Present
+    Absent
+    Pending
+    On Leave
+    Active
+    """
+
+    _ensure_hr_or_system_manager()
+
+    attendance_date = getdate(
+        attendance_date or today()
+    )
+
+    try:
+        start = int(start)
+    except (TypeError, ValueError):
+        start = 0
+
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        limit = 50
+
+    status = status or "Active"
+
+    # --------------------------------------------------
+    # Active employees
+    # --------------------------------------------------
+
+    filters = {
+        "status": "Active",
+    }
+
+    if department:
+        filters["department"] = department
+
+    if search:
+        employees = frappe.get_all(
+            "Employee",
+            filters=filters,
+            fields=[
+                "name",
+                "employee_name",
+                "department",
+                "designation",
+            ],
+            or_filters=[
+                ["employee_name", "like", f"%{search}%"],
+                ["name", "like", f"%{search}%"],
+            ],
+            order_by="employee_name asc",
+        )
+    else:
+        employees = frappe.get_all(
+            "Employee",
+            filters=filters,
+            fields=[
+                "name",
+                "employee_name",
+                "department",
+                "designation",
+            ],
+            order_by="employee_name asc",
+        )
+
+    # --------------------------------------------------
+    # Attendance
+    # --------------------------------------------------
+
+    attendance_status = _get_attendance_status_map(
+        attendance_date
+    )
+
+    # --------------------------------------------------
+    # Leave
+    # --------------------------------------------------
+
+    on_leave_employees = _get_on_leave_employees(
+        attendance_date
+    )
+
+    # --------------------------------------------------
+    # Filter according to status
+    # --------------------------------------------------
+
+    result = []
+
+    for employee in employees:
+
+        employee_id = employee.name
+
+        if employee_id in on_leave_employees:
+            employee_status = "On Leave"
+
+        else:
+            employee_status = attendance_status.get(
+                employee_id
+            )
+
+            if not employee_status:
+                employee_status = "Pending"
+
+        if status != "All" and employee_status != status:
+            continue
+
+        employee["attendance_status"] = employee_status
+        employee["attendance_date"] = str(
+            attendance_date
+        )
+
+        result.append(employee)
+
+    # --------------------------------------------------
+    # Pagination
+    # --------------------------------------------------
+
+    return result[start:start + limit]
+
+
+@frappe.whitelist()
+def get_employee_list(
+    start=0,
+    limit=50,
+    search=None,
+    department=None,
+):
+    """
+    Existing employee list.
+    """
+
+    _ensure_hr_or_system_manager()
+
+    try:
+        start = int(start)
+    except (TypeError, ValueError):
+        start = 0
+
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        limit = 50
+
+    filters = [
+        ["status", "=", "Active"]
+    ]
+
+    if department:
+        filters.append(
+            ["department", "=", department]
+        )
+
+    if search:
+        like = f"%{search}%"
+
+        filters.append(
+            [
+                "or",
+                [
+                    "employee_name",
+                    "like",
+                    like,
+                ],
+                [
+                    "name",
+                    "like",
+                    like,
+                ],
+            ]
+        )
+
+    employees = frappe.get_all(
+        "Employee",
+        filters=filters,
+        fields=[
+            "name",
+            "employee_name",
+            "department",
+            "designation",
+        ],
+        limit_page_length=limit,
+        order_by="employee_name asc",
+        offset=start,
+    )
+
+    return employees
+
+
+@frappe.whitelist()
+def get_departments():
+
+    _ensure_hr_or_system_manager()
+
+    rows = frappe.db.sql(
+        """
+        SELECT DISTINCT department
+        FROM `tabEmployee`
+        WHERE department IS NOT NULL
+          AND department != ''
+          AND status = 'Active'
+        ORDER BY department
+        """,
+        as_dict=False,
+    )
+
+    return [
+        row[0]
+        for row in rows
+    ]
+
+
+@frappe.whitelist()
+def get_companies():
+
+    _ensure_hr_or_system_manager()
+
+    rows = frappe.db.sql(
+        """
+        SELECT DISTINCT company
+        FROM `tabEmployee`
+        WHERE company IS NOT NULL
+          AND company != ''
+          AND status = 'Active'
+        ORDER BY company
+        """,
+        as_dict=False,
+    )
+
+    return [
+        row[0]
+        for row in rows
+    ]
+
+
+@frappe.whitelist()
+def get_employee_detail(
+    employee,
+    from_date,
+    to_date,
+):
+
+    _ensure_hr_or_system_manager()
+
+    from_date = getdate(from_date)
+    to_date = getdate(to_date)
+
+    attendance = frappe.get_all(
+        "Attendance",
+        filters={
+            "employee": employee,
+            "attendance_date": [
+                "between",
+                [
+                    from_date,
+                    to_date,
+                ],
+            ],
+        },
+        fields=[
+            "attendance_date",
+            "status",
+            "name",
+        ],
+        order_by="attendance_date asc",
+    )
+
+    salary_slips = frappe.get_all(
+        "Salary Slip",
+        filters={
+            "employee": employee,
+            "start_date": [
+                "<=",
+                to_date,
+            ],
+            "end_date": [
+                ">=",
+                from_date,
+            ],
+        },
+        fields=[
+            "name",
+            "start_date",
+            "end_date",
+            "total_working_days",
+            "payment_days",
+            "leave_without_pay",
+            "absent_days",
+            "gross_pay",
+            "total_deduction",
+            "net_pay",
+        ],
+        order_by="start_date desc",
+    )
+
+    return {
+        "attendance": attendance,
+        "salary_slips": salary_slips,
+    }
+
+
+@frappe.whitelist()
+def get_pending_reviews(
+    from_date=None,
+    to_date=None,
+):
+
+    _ensure_hr_or_system_manager()
+
+    try:
+
+        from tcb_customization.api import attendance_job
+
+        rows = attendance_job.get_pending_reviews(
+            from_date=from_date,
+            to_date=to_date,
+        )
+
+        return rows
+
+    except Exception as e:
+
+        frappe.log_error(
+            f"Failed to fetch pending reviews: {e}"
+        )
+
+        return []
+
+
+@frappe.whitelist()
+def bulk_review(data):
+    """
+    Proxy to attendance_job.review_mark_bulk
+    for HR Console bulk actions.
+    """
+
+    _ensure_hr_or_system_manager()
+
+    try:
+
+        from tcb_customization.api import attendance_job
+
+        return attendance_job.review_mark_bulk(
+            data
+        )
+
+    except Exception as e:
+
+        frappe.log_error(
+            f"Bulk review proxy failed: {e}"
+        )
+
+        frappe.throw(
+            "Bulk review failed; check error logs."
+        )

@@ -440,8 +440,6 @@ Object.assign(frappe.pages["hr-console"], {
 					"tcb_customization.api.hr_console.get_overview",
 
 				args: {
-					from_date: selectedDate,
-					to_date: selectedDate,
 					attendance_date: selectedDate,
 				},
 
