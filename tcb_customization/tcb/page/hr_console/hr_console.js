@@ -1202,17 +1202,6 @@ Object.assign(frappe.pages["hr-console"], {
 									</div>
 								</div>
 
-								<button
-									class="btn btn-default btn-xs hr-review-btn"
-									id="hr-review"
-								>
-									<i
-										class="fa fa-tasks"
-										style="margin-right:5px;"
-									></i>
-									Review Queue
-								</button>
-
 							</div>
 
 						</div>
@@ -1234,15 +1223,6 @@ Object.assign(frappe.pages["hr-console"], {
 									/>
 
 								</div>
-
-								<select
-									id="hr-department"
-									class="form-control hr-department-select"
-								>
-									<option value="">
-										All Departments
-									</option>
-								</select>
 
 							</div>
 
@@ -1354,7 +1334,6 @@ Object.assign(frappe.pages["hr-console"], {
 		const $list = $main.find("#hr-employee-list");
 		const $detail = $main.find("#hr-detail");
 		const $search = $main.find("#hr-search");
-		const $department = $main.find("#hr-department");
 		const $fromDate = $main.find("#hr-from-date");
 		const $toDate = $main.find("#hr-to-date");
 
@@ -1649,39 +1628,6 @@ Object.assign(frappe.pages["hr-console"], {
 		}
 
 		// ==================================================
-		// DEPARTMENTS
-		// ==================================================
-
-		function loadDepartments() {
-			frappe.call({
-				method:
-					"tcb_customization.api.hr_console.get_departments",
-
-				callback(r) {
-					const departments =
-						r.message || [];
-
-					$department
-						.find("option:not(:first)")
-						.remove();
-
-					departments.forEach(
-						(department) => {
-							const safe =
-								escape(department);
-
-							$department.append(`
-								<option value="${safe}">
-									${safe}
-								</option>
-							`);
-						}
-					);
-				},
-			});
-		}
-
-		// ==================================================
 		// EMPLOYEE LIST
 		// ==================================================
 
@@ -1698,8 +1644,8 @@ Object.assign(frappe.pages["hr-console"], {
 				<div class="hr-loading">
 					<div class="hr-loading-spinner"></div>
 					Loading ${escape(
-						currentStatus
-					).toLowerCase()} employees...
+				currentStatus
+			).toLowerCase()} employees...
 				</div>
 			`);
 
@@ -1714,8 +1660,6 @@ Object.assign(frappe.pages["hr-console"], {
 					start: start,
 					limit: pageSize,
 					search: $search.val() || "",
-					department:
-						$department.val() || "",
 				},
 
 				callback(r) {
@@ -1738,8 +1682,8 @@ Object.assign(frappe.pages["hr-console"], {
 
 								<div class="hr-no-data-text">
 									No ${escape(
-										currentStatus
-									).toLowerCase()}
+							currentStatus
+						).toLowerCase()}
 									employees found for
 									${escape(selectedDate)}.
 								</div>
@@ -1801,11 +1745,11 @@ Object.assign(frappe.pages["hr-console"], {
 
 									<div class="hr-avatar">
 										${escape(
-											initials(
-												employee.employee_name ||
-												employee.name
-											)
-										)}
+								initials(
+									employee.employee_name ||
+									employee.name
+								)
+							)}
 									</div>
 
 									<div class="hr-employee-main">
@@ -1816,12 +1760,11 @@ Object.assign(frappe.pages["hr-console"], {
 
 										<div class="hr-employee-meta">
 											${designation}
-											${
-												designation &&
-												department
-													? " • "
-													: ""
-											}
+											${designation &&
+									department
+									? " • "
+									: ""
+								}
 											${department}
 										</div>
 
@@ -1859,23 +1802,23 @@ Object.assign(frappe.pages["hr-console"], {
 									);
 
 									if (currentStatus === "Pending") {
-            const pendingDate =
-                employee.pending_date ||
-                employee.attendance_date ||
-                employee.date ||
-                selectedDate;
+										const pendingDate =
+											employee.pending_date ||
+											employee.attendance_date ||
+											employee.date ||
+											selectedDate;
 
-            loadPendingEmployeeTimesheet(
-                employee.name,
-                employee.employee_name,
-                pendingDate
-            );
-        } else {
-            loadEmployeeDetail(
-                employee.name,
-                employee.employee_name
-            );
-        }
+										loadPendingEmployeeTimesheet(
+											employee.name,
+											employee.employee_name,
+											pendingDate
+										);
+									} else {
+										loadEmployeeDetail(
+											employee.name,
+											employee.employee_name
+										);
+									}
 								}
 							);
 
@@ -1944,10 +1887,10 @@ Object.assign(frappe.pages["hr-console"], {
 		}
 
 		// ==================================================
-		
-function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
-    $detail.html(`
+		function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
+
+			$detail.html(`
         <div style="padding:40px;text-align:center;color:#888;">
             <div style="font-size:30px;margin-bottom:10px;">⏳</div>
             <div style="font-size:16px;font-weight:600;color:#444;">
@@ -1959,27 +1902,27 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
         </div>
     `);
 
-    frappe.db.get_list("Timesheet", {
-        fields: [
-            "name",
-            "employee",
-            "employee_name",
-            "start_date",
-            "end_date",
-            "total_hours",
-            "status"
-        ],
-        filters: [
-            ["employee", "=", employee],
-            ["start_date", "<=", pendingDate],
-            ["end_date", ">=", pendingDate]
-        ],
-        order_by: "start_date desc",
-        limit_page_length: 50
-    }).then(function(timesheets) {
+			frappe.db.get_list("Timesheet", {
+				fields: [
+					"name",
+					"employee",
+					"employee_name",
+					"start_date",
+					"end_date",
+					"total_hours",
+					"status"
+				],
+				filters: [
+					["employee", "=", employee],
+					["start_date", "<=", pendingDate],
+					["end_date", ">=", pendingDate]
+				],
+				order_by: "start_date desc",
+				limit_page_length: 50
+			}).then(function (timesheets) {
 
-        if (!timesheets || !timesheets.length) {
-            $detail.html(`
+				if (!timesheets || !timesheets.length) {
+					$detail.html(`
                 <div style="padding:40px;text-align:center;">
                     <div style="font-size:42px;margin-bottom:12px;">📋</div>
 
@@ -2000,38 +1943,38 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
                 </div>
             `);
 
-            return;
-        }
+					return;
+				}
 
-        Promise.all(
-            timesheets.map(function(ts) {
-                return frappe.db.get_doc("Timesheet", ts.name);
-            })
-        ).then(function(docs) {
+				Promise.all(
+					timesheets.map(function (ts) {
+						return frappe.db.get_doc("Timesheet", ts.name);
+					})
+				).then(function (docs) {
 
-            let matched = [];
+					let matched = [];
 
-            docs.forEach(function(doc) {
+					docs.forEach(function (doc) {
 
-                const logs = (doc.time_logs || []).filter(function(log) {
+						const logs = (doc.time_logs || []).filter(function (log) {
 
-                    if (!log.from_time) {
-                        return false;
-                    }
+							if (!log.from_time) {
+								return false;
+							}
 
-                    return String(log.from_time).substring(0, 10) === pendingDate;
-                });
+							return String(log.from_time).substring(0, 10) === pendingDate;
+						});
 
-                if (logs.length) {
-                    matched.push({
-                        doc: doc,
-                        logs: logs
-                    });
-                }
-            });
+						if (logs.length) {
+							matched.push({
+								doc: doc,
+								logs: logs
+							});
+						}
+					});
 
-            if (!matched.length) {
-                $detail.html(`
+					if (!matched.length) {
+						$detail.html(`
                     <div style="padding:40px;text-align:center;">
 
                         <div style="font-size:42px;margin-bottom:12px;">
@@ -2056,10 +1999,10 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
                     </div>
                 `);
 
-                return;
-            }
+						return;
+					}
 
-            let html = `
+					let html = `
                 <div style="
                     margin-bottom:20px;
                     padding-bottom:15px;
@@ -2133,16 +2076,16 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
                 </div>
             `;
 
-            matched.forEach(function(item) {
+					matched.forEach(function (item) {
 
-                const doc = item.doc;
-                const logs = item.logs;
+						const doc = item.doc;
+						const logs = item.logs;
 
-                const totalHours = logs.reduce(function(sum, log) {
-                    return sum + (parseFloat(log.hours) || 0);
-                }, 0);
+						const totalHours = logs.reduce(function (sum, log) {
+							return sum + (parseFloat(log.hours) || 0);
+						}, 0);
 
-                html += `
+						html += `
                     <div style="
                         border:1px solid #e5e7eb;
                         border-radius:14px;
@@ -2292,9 +2235,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
                                 <tbody>
             `;
 
-                logs.forEach(function(log) {
+						logs.forEach(function (log) {
 
-                    html += `
+							html += `
                         <tr>
 
                             <td style="padding:10px;border-bottom:1px solid #f0f0f0;">
@@ -2327,9 +2270,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
                         </tr>
                     `;
-                });
+						});
 
-                html += `
+						html += `
                                 </tbody>
                             </table>
 
@@ -2337,34 +2280,278 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
                     </div>
                 `;
-            });
+					});
 
-            $detail.html(html);
+					$detail.html(html);
 
-        }).catch(function(err) {
+				}).catch(function (err) {
 
-            console.error("Pending Timesheet error:", err);
+					console.error("Pending Timesheet error:", err);
 
-            $detail.html(`
+					$detail.html(`
                 <div style="padding:20px;color:#b91c1c;">
                     Failed to load Timesheet.
                 </div>
             `);
-        });
+				});
 
-    }).catch(function(err) {
+			}).catch(function (err) {
 
-        console.error("Pending Timesheet list error:", err);
+				console.error("Pending Timesheet list error:", err);
 
-        $detail.html(`
+				$detail.html(`
             <div style="padding:20px;color:#b91c1c;">
                 Failed to load Timesheet.
             </div>
         `);
-    });
-}
+			});
+		}
 
-// EMPLOYEE DETAIL
+		// ==================================================
+		// EMPLOYEE LEAVE APPLICATIONS (for Leave Application action card)
+		// ==================================================
+
+		function loadEmployeeLeaveApplications(employee, employeeName) {
+
+			loadingDetail();
+
+			frappe.db.get_list("Leave Application", {
+				fields: [
+					"name",
+					"employee",
+					"employee_name",
+					"leave_type",
+					"from_date",
+					"to_date",
+					"total_leave_days",
+					"status",
+					"docstatus",
+					"description",
+					"posting_date",
+				],
+				filters: [
+					["employee", "=", employee],
+					["docstatus", "=", 1],
+				],
+				order_by: "from_date desc",
+				limit_page_length: 0,
+			}).then(function (applications) {
+
+				if (!applications || !applications.length) {
+					$detail.html(`
+				<div class="hr-detail-empty">
+
+					<div>
+
+						<div class="hr-empty-icon">
+							<i class="fa fa-calendar-times-o"></i>
+						</div>
+
+						<div class="hr-empty-title">
+							No Leave Applications Found
+						</div>
+
+						<div class="hr-empty-text">
+							No leave applications found for
+							${escape(employeeName || employee)}.
+						</div>
+
+					</div>
+
+				</div>
+			`);
+
+					return;
+				}
+
+				let html = `
+
+			<div class="hr-profile">
+
+				<div class="hr-profile-avatar">
+					${escape(initials(employeeName || employee))}
+				</div>
+
+				<div>
+
+					<h3 class="hr-profile-name">
+						${escape(employeeName || employee)}
+					</h3>
+
+					<div class="hr-profile-id">
+						${escape(employee)}
+					</div>
+
+				</div>
+
+			</div>
+
+			<div class="hr-detail-section-title">
+				Leave Applications (${applications.length})
+			</div>
+		`;
+
+				applications.forEach(function (app) {
+
+					const statusColor =
+						app.status === "Approved"
+							? { bg: "#ecfdf5", color: "#059669" }
+							: app.status === "Rejected"
+								? { bg: "#fef2f2", color: "#dc2626" }
+								: { bg: "#fffbeb", color: "#d97706" };
+
+					html += `
+
+				<div class="hr-pay-card">
+
+					<div
+						style="
+							display:flex;
+							justify-content:space-between;
+							align-items:center;
+							gap:10px;
+							margin-bottom:11px;
+						"
+					>
+
+						<div>
+
+							<div
+								style="
+									font-size:12px;
+									font-weight:750;
+									color:#303747;
+								"
+							>
+								${escape(app.leave_type || "Leave")}
+							</div>
+
+							<div
+								style="
+									font-size:10px;
+									color:#9299a8;
+									margin-top:3px;
+								"
+							>
+								${escape(app.name || "")}
+							</div>
+
+						</div>
+
+						<div
+							style="
+								font-size:10px;
+								font-weight:700;
+								color:${statusColor.color};
+								background:${statusColor.bg};
+								padding:5px 9px;
+								border-radius:999px;
+							"
+						>
+							${escape(app.status || "")}
+						</div>
+
+					</div>
+
+					<div class="hr-pay-grid">
+
+						<div class="hr-pay-item">
+
+							<div class="hr-pay-label">
+								From
+							</div>
+
+							<div class="hr-pay-value">
+								${escape(app.from_date || "-")}
+							</div>
+
+						</div>
+
+						<div class="hr-pay-item">
+
+							<div class="hr-pay-label">
+								To
+							</div>
+
+							<div class="hr-pay-value">
+								${escape(app.to_date || "-")}
+							</div>
+
+						</div>
+
+						<div class="hr-pay-item">
+
+							<div class="hr-pay-label">
+								Total Days
+							</div>
+
+							<div class="hr-pay-value">
+								${escape(app.total_leave_days ?? "-")}
+							</div>
+
+						</div>
+
+					</div>
+
+					${app.description
+							? `
+						<div
+							style="
+								margin-top:10px;
+								padding:10px;
+								border-radius:9px;
+								background:#f8f9fc;
+								font-size:11px;
+								color:#5b6272;
+							"
+						>
+							${escape(app.description)}
+						</div>
+					`
+							: ""
+						}
+
+				</div>
+			`;
+				});
+
+				$detail.html(html);
+
+			}).catch(function (err) {
+
+				console.error("Leave Application list error", err);
+
+				$detail.html(`
+			<div class="hr-detail-empty">
+
+				<div>
+
+					<div
+						class="hr-empty-icon"
+						style="
+							background:#fef2f2;
+							color:#ef4444;
+						"
+					>
+						<i class="fa fa-exclamation-circle"></i>
+					</div>
+
+					<div class="hr-empty-title">
+						Failed to load leave applications
+					</div>
+
+					<div class="hr-empty-text">
+						Please refresh and try again.
+					</div>
+
+				</div>
+
+			</div>
+		`);
+			});
+		}
+
+		// EMPLOYEE DETAIL
 		// ==================================================
 
 		function loadEmployeeDetail(
@@ -2454,25 +2641,25 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 							<div class="hr-profile-avatar">
 								${escape(
-									initials(
-										employeeDisplayName
-									)
-								)}
+						initials(
+							employeeDisplayName
+						)
+					)}
 							</div>
 
 							<div>
 
 								<h3 class="hr-profile-name">
 									${escape(
-										employeeDisplayName
-									)}
+						employeeDisplayName
+					)}
 								</h3>
 
 								<div class="hr-profile-id">
 									${escape(
-										employeeInfo.name ||
-										employee
-									)}
+						employeeInfo.name ||
+						employee
+					)}
 								</div>
 
 							</div>
@@ -2494,9 +2681,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 								<div class="hr-info-value">
 									${escape(
-										employeeInfo.department ||
-										"-"
-									)}
+						employeeInfo.department ||
+						"-"
+					)}
 								</div>
 							</div>
 
@@ -2507,9 +2694,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 								<div class="hr-info-value">
 									${escape(
-										employeeInfo.designation ||
-										"-"
-									)}
+						employeeInfo.designation ||
+						"-"
+					)}
 								</div>
 							</div>
 
@@ -2520,9 +2707,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 								<div class="hr-info-value">
 									${escape(
-										employeeInfo.company ||
-										"-"
-									)}
+						employeeInfo.company ||
+						"-"
+					)}
 								</div>
 							</div>
 
@@ -2533,9 +2720,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 								<div class="hr-info-value">
 									${escape(
-										employeeInfo.date_of_joining ||
-										"-"
-									)}
+						employeeInfo.date_of_joining ||
+						"-"
+					)}
 								</div>
 							</div>
 
@@ -2562,13 +2749,13 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 											class="
 												hr-attendance-status
 												${attendanceStatusClass(
-													selectedStatus
-												)}
+						selectedStatus
+					)}
 											"
 										>
 											${escape(
-												selectedStatus
-											)}
+						selectedStatus
+					)}
 										</span>
 									</div>
 
@@ -2582,9 +2769,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 									<div class="hr-attendance-value">
 										${escape(
-											selectedAttendance?.in_time ||
-											"-"
-										)}
+						selectedAttendance?.in_time ||
+						"-"
+					)}
 									</div>
 
 								</div>
@@ -2597,9 +2784,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 									<div class="hr-attendance-value">
 										${escape(
-											selectedAttendance?.out_time ||
-											"-"
-										)}
+						selectedAttendance?.out_time ||
+						"-"
+					)}
 									</div>
 
 								</div>
@@ -2612,9 +2799,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 									<div class="hr-attendance-value">
 										${escape(
-											selectedAttendance?.working_hours ??
-											"-"
-										)}
+						selectedAttendance?.working_hours ??
+						"-"
+					)}
 									</div>
 
 								</div>
@@ -2660,7 +2847,7 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 						const row =
 							attendanceMap[
-								dateString
+							dateString
 							];
 
 						const status =
@@ -2671,12 +2858,11 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 							<tr
 								style="
-									${
-										dateString ===
-										selectedDate
-											? "font-weight:700;background:#f7f8ff;"
-											: ""
-									}
+									${dateString ===
+								selectedDate
+								? "font-weight:700;background:#f7f8ff;"
+								: ""
+							}
 								"
 							>
 
@@ -2690,8 +2876,8 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 										class="
 											hr-attendance-status
 											${attendanceStatusClass(
-												status
-											)}
+								status
+							)}
 										"
 									>
 										${escape(status)}
@@ -2701,23 +2887,23 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 								<td>
 									${escape(
-										row?.in_time ||
-										"-"
-									)}
+								row?.in_time ||
+								"-"
+							)}
 								</td>
 
 								<td>
 									${escape(
-										row?.out_time ||
-										"-"
-									)}
+								row?.out_time ||
+								"-"
+							)}
 								</td>
 
 								<td>
 									${escape(
-										row?.working_hours ??
-										"-"
-									)}
+								row?.working_hours ??
+								"-"
+							)}
 								</td>
 
 							</tr>
@@ -2810,9 +2996,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 													"
 												>
 													${escape(
-														slip.name ||
-														""
-													)}
+									slip.name ||
+									""
+								)}
 												</div>
 
 											</div>
@@ -2828,14 +3014,14 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 												"
 											>
 												${escape(
-													slip.start_date ||
-													""
-												)}
+									slip.start_date ||
+									""
+								)}
 												&nbsp;→&nbsp;
 												${escape(
-													slip.end_date ||
-													""
-												)}
+									slip.end_date ||
+									""
+								)}
 											</div>
 
 										</div>
@@ -2850,9 +3036,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.total_working_days ??
-														0
-													)}
+									slip.total_working_days ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2865,9 +3051,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.payment_days ??
-														0
-													)}
+									slip.payment_days ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2880,9 +3066,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.leave_without_pay ??
-														0
-													)}
+									slip.leave_without_pay ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2895,9 +3081,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.absent_days ??
-														0
-													)}
+									slip.absent_days ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2910,9 +3096,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.gross_pay ??
-														0
-													)}
+									slip.gross_pay ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2925,9 +3111,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.total_deduction ??
-														0
-													)}
+									slip.total_deduction ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2945,9 +3131,9 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 												<div class="hr-pay-value">
 													${escape(
-														slip.net_pay ??
-														0
-													)}
+									slip.net_pay ??
+									0
+								)}
 												</div>
 
 											</div>
@@ -2998,438 +3184,6 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 					`);
 				},
 			});
-		}
-
-		// ==================================================
-		// ATTENDANCE REVIEW QUEUE
-		// ==================================================
-
-		function openReviewQueue() {
-
-			const dialog =
-				new frappe.ui.Dialog({
-
-					title:
-						"Attendance Review Queue",
-
-					fields: [
-
-						{
-							fieldname:
-								"from_date",
-
-							fieldtype:
-								"Date",
-
-							label:
-								"From Date",
-						},
-
-						{
-							fieldname:
-								"to_date",
-
-							fieldtype:
-								"Date",
-
-							label:
-								"To Date",
-						},
-
-						{
-							fieldname:
-								"action",
-
-							fieldtype:
-								"Select",
-
-							label:
-								"Action",
-
-							options: [
-								"accept",
-								"reject",
-							],
-
-							default:
-								"accept",
-						},
-
-						{
-							fieldname:
-								"reason",
-
-							fieldtype:
-								"Small Text",
-
-							label:
-								"Reason",
-						},
-
-						{
-							fieldname:
-								"rows_html",
-
-							fieldtype:
-								"HTML",
-						},
-
-					],
-
-					primary_action_label:
-						"Process",
-
-					primary_action(values) {
-
-						const selected = [];
-
-						dialog.$wrapper
-							.find(
-								"input.hr-review-checkbox:checked"
-							)
-							.each(
-								function () {
-
-									const index =
-										$(this).data(
-											"index"
-										);
-
-									selected.push(
-										dialog._reviewRows[
-											index
-										]
-									);
-								}
-							);
-
-						if (!selected.length) {
-
-							frappe.msgprint(
-								"Select at least one attendance record."
-							);
-
-							return;
-						}
-
-						if (
-							values.action ===
-								"reject" &&
-							!values.reason
-						) {
-
-							frappe.msgprint(
-								"Reason is required when rejecting."
-							);
-
-							return;
-						}
-
-						const payload =
-							selected.map(
-								(row) => ({
-									employee:
-										row.employee,
-
-									date:
-										row.date,
-
-									action:
-										values.action,
-
-									reason:
-										values.reason ||
-										"",
-								})
-							);
-
-						frappe.call({
-
-							method:
-								"tcb_customization.api.hr_console.bulk_review",
-
-							args: {
-
-								data:
-									JSON.stringify({
-										rows:
-											payload,
-									}),
-
-							},
-
-							callback() {
-
-								frappe.msgprint(
-									"Attendance review processed."
-								);
-
-								dialog.hide();
-
-								loadOverview();
-
-								loadEmployees(
-									currentPage
-								);
-							},
-						});
-					},
-				});
-
-			dialog._reviewRows = [];
-
-			const reviewDate =
-				frappe.datetime.add_days(
-					selectedDate,
-					-1
-				);
-
-			dialog.set_value(
-				"from_date",
-				reviewDate
-			);
-
-			dialog.set_value(
-				"to_date",
-				reviewDate
-			);
-
-			dialog.show();
-
-			function loadReviews() {
-
-				frappe.call({
-
-					method:
-						"tcb_customization.api.hr_console.get_pending_reviews",
-
-					args: {
-
-						from_date:
-							dialog.get_value(
-								"from_date"
-							),
-
-						to_date:
-							dialog.get_value(
-								"to_date"
-							),
-					},
-
-					callback(r) {
-
-						const rows =
-							r.message || [];
-
-						dialog._reviewRows =
-							rows;
-
-						let html = "";
-
-						if (!rows.length) {
-
-							html = `
-								<div
-									style="
-										padding:35px 15px;
-										text-align:center;
-										color:#8b93a3;
-									"
-								>
-
-									<div
-										style="
-											font-size:28px;
-											margin-bottom:10px;
-											color:#b7becb;
-										"
-									>
-										<i class="fa fa-check-circle"></i>
-									</div>
-
-									<div
-										style="
-											font-size:13px;
-											font-weight:700;
-											color:#60697a;
-										"
-									>
-										No pending attendance reviews
-									</div>
-
-									<div
-										style="
-											font-size:11px;
-											margin-top:4px;
-										"
-									>
-										Everything is up to date.
-									</div>
-
-								</div>
-							`;
-
-						} else {
-
-							html = `
-
-								<div
-									style="
-										border:1px solid #edf0f5;
-										border-radius:12px;
-										overflow:auto;
-										max-height:360px;
-									"
-								>
-
-									<table class="table table-bordered">
-
-										<thead>
-
-											<tr>
-
-												<th>
-													<input
-														type="checkbox"
-														id="hr-select-all"
-													>
-												</th>
-
-												<th>
-													Employee
-												</th>
-
-												<th>
-													Date
-												</th>
-
-												<th>
-													Company
-												</th>
-
-											</tr>
-
-										</thead>
-
-										<tbody>
-							`;
-
-							rows.forEach(
-								(row, index) => {
-
-									html += `
-
-										<tr>
-
-											<td>
-												<input
-													type="checkbox"
-													class="hr-review-checkbox"
-													data-index="${index}"
-												>
-											</td>
-
-											<td>
-												<div
-													style="
-														font-weight:650;
-													"
-												>
-													${escape(
-														row.employee_name ||
-														""
-													)}
-												</div>
-
-												<div
-													style="
-														font-size:10px;
-														color:#9299a8;
-														margin-top:2px;
-													"
-												>
-													${escape(
-														row.employee ||
-														""
-													)}
-												</div>
-											</td>
-
-											<td>
-												${escape(
-													row.date ||
-													""
-												)}
-											</td>
-
-											<td>
-												${escape(
-													row.company ||
-													""
-												)}
-											</td>
-
-										</tr>
-									`;
-								}
-							);
-
-							html += `
-
-										</tbody>
-
-									</table>
-
-								</div>
-							`;
-						}
-
-						dialog
-							.get_field(
-								"rows_html"
-							)
-							.$wrapper
-							.html(html);
-
-						dialog.$wrapper
-							.find("#hr-select-all")
-							.on(
-								"change",
-								function () {
-
-									dialog.$wrapper
-										.find(
-											".hr-review-checkbox"
-										)
-										.prop(
-											"checked",
-											$(this).is(
-												":checked"
-											)
-										);
-								}
-							);
-					},
-				});
-			}
-
-			dialog
-				.get_field("from_date")
-				.$input
-				.on(
-					"change",
-					loadReviews
-				);
-
-			dialog
-				.get_field("to_date")
-				.$input
-				.on(
-					"change",
-					loadReviews
-				);
-
-			loadReviews();
 		}
 
 		// ==================================================
@@ -3506,8 +3260,8 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 					<div class="hr-loading-spinner"></div>
 
 					Loading ${escape(
-						type.label
-					)}...
+				type.label
+			)}...
 
 				</div>
 			`);
@@ -3629,8 +3383,8 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 									<div class="hr-no-data-title">
 										No ${escape(
-											type.label
-										)} found
+								type.label
+							)} found
 									</div>
 
 									<div class="hr-no-data-text">
@@ -3669,11 +3423,11 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 										<div class="hr-avatar">
 											${escape(
-												initials(
-													record.employee_name ||
-													record.employee
-												)
-											)}
+									initials(
+										record.employee_name ||
+										record.employee
+									)
+								)}
 										</div>
 
 										<div class="hr-employee-main">
@@ -3694,8 +3448,8 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 											"
 										>
 											${escape(
-												type.label
-											)}
+									type.label
+								)}
 										</div>
 
 									</div>
@@ -3724,10 +3478,23 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 												"selected"
 											);
 
-											loadEmployeeDetail(
-												record.employee,
-												record.employee_name
-											);
+											if (
+												type.doctype ===
+												"Leave Application"
+											) {
+
+												loadEmployeeLeaveApplications(
+													record.employee,
+													record.employee_name
+												);
+
+											} else {
+
+												loadEmployeeDetail(
+													record.employee,
+													record.employee_name
+												);
+											}
 										}
 									}
 								);
@@ -3835,17 +3602,6 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 			);
 
 		// ==================================================
-		// REVIEW
-		// ==================================================
-
-		$main
-			.find("#hr-review")
-			.on(
-				"click",
-				openReviewQueue
-			);
-
-		// ==================================================
 		// PAGINATION
 		// ==================================================
 
@@ -3904,23 +3660,6 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 						},
 						400
 					);
-			}
-		);
-
-		// ==================================================
-		// DEPARTMENT
-		// ==================================================
-
-		$department.on(
-			"change",
-			function () {
-
-				selectedEmployee =
-					null;
-
-				emptyDetail();
-
-				loadEmployees(0);
 			}
 		);
 
@@ -3987,8 +3726,6 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 					loadActionCardCounts();
 
-					loadDepartments();
-
 					loadEmployees(0);
 				}
 			);
@@ -4003,9 +3740,6 @@ function loadPendingEmployeeTimesheet(employee, employeeName, pendingDate) {
 
 		loadActionCardCounts();
 
-		loadDepartments();
-
 		loadEmployees(0);
 	},
 });
-
