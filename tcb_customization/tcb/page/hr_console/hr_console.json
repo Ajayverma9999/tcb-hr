@@ -1,7 +1,19 @@
 {
-    "doctype": "Page",
-    "name": "hr-console",
-    "module": "TCB Customization",
-    "title": "HR Console",
-    "standard": "Yes"
+ "content": null,
+ "creation": "2026-09-08 09:17:32.708953",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-09-08 09:46:16.512472",
+ "modified_by": "Administrator",
+ "module": "tcb",
+ "name": "hr-console",
+ "owner": "Administrator",
+ "page_name": "hr-console",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "HR Console"
 }
