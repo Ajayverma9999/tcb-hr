@@ -1,12 +1,6 @@
 
 frappe.pages["hr-console"].on_page_load = function (wrapper) {
-    wrapper.hr_console_dashboard = new HRConsoleDashboard(wrapper);
-};
-
-frappe.pages["hr-console"].on_page_show = function (wrapper) {
-    if (wrapper.hr_console_dashboard) {
-        wrapper.hr_console_dashboard.loadDashboard();
-    }
+    new HRConsoleDashboard(wrapper);
 };
 
 class HRConsoleDashboard {
@@ -1158,8 +1152,7 @@ class HRConsoleDashboard {
                     row.approval_status || "Pending";
 
                 html += `
-                    <div class="hr-list-row" style="cursor:pointer"
-                        onclick="frappe.set_route('Form', 'Expense Claim', '${frappe.utils.escape_html(row.name || '')}')">
+                    <div class="hr-list-row">
 
                         <div class="hr-employee">
 
@@ -1208,8 +1201,7 @@ class HRConsoleDashboard {
                     : "";
 
                 html += `
-                    <div class="hr-list-row" style="cursor:pointer"
-                        onclick="frappe.set_route('Form', 'Leave Application', '${frappe.utils.escape_html(row.name || '')}')">
+                    <div class="hr-list-row">
 
                         <div class="hr-employee">
 

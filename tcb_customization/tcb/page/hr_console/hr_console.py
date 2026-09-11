@@ -122,6 +122,7 @@ def get_dashboard_data(year, month):
         "Expense Claim",
         filters={
             "posting_date": ["between", [start_date, end_date]],
+            "approval_status": "Draft",
         },
         fields=[
             "name",
@@ -144,6 +145,7 @@ def get_dashboard_data(year, month):
         filters={
             "from_date": ["<=", end_date],
             "to_date": [">=", start_date],
+            "status": "Open",
         },
         fields=[
             "name",

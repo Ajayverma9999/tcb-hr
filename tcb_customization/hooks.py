@@ -6,19 +6,22 @@ app_email = "tcb@gmail.com"
 app_license = "mit"
 
 
-# scheduler_events = {
-#     "cron": {
-#         "0 22 * * *": [
-#             "tcb_customization.api.timesheet_reminder.first_reminder"
-#         ],
-#         "30 23 * * *": [
-#             "tcb_customization.api.timesheet_reminder.final_reminder"
-#         ],
-#         "55 23 * * *": [
-#             "tcb_customization.api.timesheet_reminder.mark_lwp"
-#         ]
-#     }
-# }
+scheduler_events = {
+    "cron": {
+        "0 22 * * *": [
+            "tcb_customization.api.timesheet_reminder.first_reminder"
+        ],
+        "30 23 * * *": [
+            "tcb_customization.api.timesheet_reminder.final_reminder"
+        ],
+        "55 23 * * *": [
+            "tcb_customization.api.timesheet_reminder.mark_lwp"
+        ],
+        "0 9 28 * *": [
+            "tcb_customization.tcb.payroll.salary_automation.create_monthly_salary_slips"
+        ]
+    }
+}
 
 
 
@@ -359,3 +362,25 @@ doc_events.update({
         "on_submit": "tcb_customization.api.wfh_workflow.notify_manager_leave_application"
     }
 })
+
+add_to_apps_screen = [{
+    "name": "tcb_customization",
+    "logo": "/assets/tcb_customization/images/my-attendance.svg",
+    "title": "My Attendance",
+    "route": "/desk/employee-attendance"
+}]
+
+# My Attendance tile on Desk Apps screen
+add_to_apps_screen = [
+    {
+        "name": "my_attendance",
+        "logo": "/assets/tcb_customization/images/my-attendance.svg",
+        "title": "My Attendance",
+        "route": "/desk/employee-attendance",
+        "sequence_id": 50
+    }
+]
+
+override_whitelisted_methods = {
+    "frappe.model.workflow.apply_workflow": "tcb_customization.api.workflow.apply_workflow",
+}

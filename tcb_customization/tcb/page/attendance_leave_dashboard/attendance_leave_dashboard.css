@@ -1,0 +1,203 @@
+.attendance-leave-dashboard {
+    padding: 20px;
+}
+
+.ald-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+.ald-header h2 {
+    margin: 0;
+}
+
+.ald-subtitle {
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.ald-filters {
+    min-width: 280px;
+}
+
+.employee-info {
+    background: var(--bg-light-gray);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+
+.employee-name {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.employee-details {
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.ald-layout {
+    display: grid;
+    grid-template-columns: 1fr 330px;
+    gap: 20px;
+}
+
+.calendar-card,
+.balance-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+    margin: 0;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.weekdays {
+    margin-bottom: 8px;
+}
+
+.weekdays > div {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 8px;
+}
+
+.calendar-cell {
+    min-height: 75px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px;
+    background: var(--bg-color);
+}
+
+.calendar-cell.present {
+    background: #e8f7ed;
+    border-color: #72c78a;
+}
+
+.calendar-cell.absent {
+    background: #fdeaea;
+    border-color: #e28b8b;
+}
+
+.calendar-cell.leave {
+    background: #fff4d6;
+    border-color: #e6c56a;
+}
+
+.calendar-cell.weekend {
+    background: var(--bg-light-gray);
+}
+
+.calendar-cell.empty {
+    border: none;
+    background: transparent;
+}
+
+.date-number {
+    font-weight: 600;
+}
+
+.status-code {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+.legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend b {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.legend-present {
+    background: #72c78a;
+}
+
+.legend-absent {
+    background: #e28b8b;
+}
+
+.legend-leave {
+    background: #e6c56a;
+}
+
+.legend-weekend {
+    background: #ddd;
+}
+
+.balance-card h3 {
+    margin-top: 0;
+}
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.balance-row:last-child {
+    border-bottom: none;
+}
+
+.balance-code {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    margin-right: 8px;
+    padding: 4px 7px;
+    border-radius: 5px;
+    background: var(--bg-light-gray);
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .ald-header {
+        display: block;
+    }
+
+    .ald-filters {
+        margin-top: 15px;
+    }
+
+    .ald-layout {
+        grid-template-columns: 1fr;
+    }
+}
