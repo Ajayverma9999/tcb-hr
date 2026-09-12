@@ -1,0 +1,24 @@
+[
+ {
+  "app": null,
+  "bg_color": "gray",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon": "calendar",
+  "icon_image": null,
+  "icon_type": "Link",
+  "label": "My Attendance",
+  "link": "/desk/employee-attendance",
+  "link_to": null,
+  "link_type": "External",
+  "logo_url": "/assets/tcb_customization/images/my-attendance-blue.svg",
+  "modified": "2026-09-10 17:07:59.684735",
+  "name": "My Attendance",
+  "parent_icon": null,
+  "restrict_removal": 0,
+  "roles": [],
+  "sidebar": null,
+  "standard": 1
+ }
+]

@@ -384,3 +384,38 @@ add_to_apps_screen = [
 override_whitelisted_methods = {
     "frappe.model.workflow.apply_workflow": "tcb_customization.api.workflow.apply_workflow",
 }
+
+
+
+fixtures = [
+    {
+        "dt": "Workflow",
+        "filters": [
+            ["name", "in", [
+                "leave application approval",
+                "Expense Claim Approval",
+                "Work From Home Approval"
+            ]]
+        ]
+    },
+    {
+        "dt": "Custom Field",
+        "filters": [
+            ["name", "in", [
+                "Leave Application-workflow_state",
+                "Expense Claim-workflow_state",
+                "Attendance Request-workflow_state",
+                "Leave Application-custom_manager_verified",
+                "Attendance Request-hr_approved",
+                "Attendance Request-manager_approved",
+                "Attendance Request-manager"
+            ]]
+        ]
+    },
+    {
+        "dt": "Desktop Icon",
+        "filters": [
+            ["name", "=", "My Attendance"]
+        ]
+    }
+]
